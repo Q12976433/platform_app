@@ -1,0 +1,37 @@
+name: Deploy to S3
+
+on:
+  push:
+    branches:
+      - main  # 监听主分支的推送事件
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'  # 指定Node版本
+
+    - name: Install Dependencies
+      run: yarn install
+
+    - name: Build Project
+      run: yarn build  # 这里假设您的构建命令会生成dist文件夹
+
+    - name: Sync dist folder to S3
+      uses: jakejarvis/s3-sync-action@v0.5.1
+      with:
+        args: --acl public-read --follow-symlinks --delete
+      env:
+        AWS_S3_BUCKET: misxxuu1
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: 'us-east-1'  # 指定您的S3桶所在的AWS区域
+        SOURCE_DIR: 'dist'  # 指定要上传的文件夹路径
+
